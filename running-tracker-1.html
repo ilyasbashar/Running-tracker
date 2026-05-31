@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RunTrack</title>
+<meta name="theme-color" content="#00ff87">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RunTrack">
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0c10;
+    --card: #12151c;
+    --green: #00ff87;
+    --green2: #00c96b;
+    --orange: #ff6b35;
+    --blue: #4facfe;
+    --text: #e8eaf0;
+    --muted: #5a6080;
+    --glow: 0 0 20px rgba(0,255,135,0.4);
+    --border: rgba(0,255,135,0.15);
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'Orbitron', monospace;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px 40px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,135,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,135,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridMove 20s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 60% 30%, rgba(0,255,135,0.05) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 80%, rgba(79,172,254,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes gridMove {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(40px); }
+  }
+
+  .container { position: relative; z-index: 1; width: 100%; max-width: 420px; }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 28px;
+    animation: fadeDown 0.6s ease;
+  }
+
+  .header .icon {
+    font-size: 40px;
+    margin-bottom: 6px;
+    filter: drop-shadow(0 0 12px rgba(0,255,135,0.6));
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+  .header h1 {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, var(--green), var(--blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-transform: uppercase;
+  }
+
+  .header p {
+    font-family: 'Noto Nastaliq Urdu', serif;
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+    direction: rtl;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.5s ease backwards;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    opacity: 0.5;
+  }
+
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+
+  .card-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Countdown Timer Display */
+  .timer-display {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .timer-digits {
+    font-size: 68px;
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1;
+    color: var(--green);
+    text-shadow: var(--glow);
+    transition: color 0.5s, text-shadow 0.5s;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .timer-digits.warning {
+    color: var(--orange);
+    text-shadow: 0 0 20px rgba(255,107,53,0.5);
+    animation: timerPulse 1s ease-in-out infinite;
+  }
+
+  .timer-digits.finished {
+    color: #ff4444;
+    text-shadow: 0 0 20px rgba(255,68,68,0.6);
+  }
+
+  @keyframes timerPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+
+  .timer-label-text {
+    font-family: 'Noto Nastaliq Urdu', serif;
+    font-size: 13px;
+    color: var(--muted);
+    direction: rtl;
+    margin-top: 6px;
+  }
+
+  /* Progress ring */
+  .progress-ring-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .progress-ring-container svg { transform: rotate(-90deg); }
+
+  .ring-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 6; }
+
+  .ring-fill {
+    fill: none;
+    stroke: var(--green);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 283;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 1s linear, stroke 0.5s;
+    filter: drop-shadow(0 0 6px rgba(0,255,135,0.6));
+  }
+
+  .ring-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* Time Setter */
+  .time-setter {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .time-unit { text-align: center; }
+
+  .time-unit label {
+    display: block;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .time-unit input {
+    background: rgba(0,255,135,0.05);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    width: 72px;
+    height: 52px;
+    text-align: center;
+    outline: none;
+    transition: all 0.3s;
+    -moz-appearance: textfield;
+  }
+
+  .time-unit input::-webkit-outer-spin-button,
+  .time-unit input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .time-unit input:focus {
+    border-color: var(--green);
+    box-shadow: var(--glow);
+    background: rgba(0,255,135,0.08);
+  }
+
+  .colon {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--green);
+    margin-top: 14px;
+    opacity: 0.6;
+  }
+
+  /* Distance display */
+  .distance-display {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .distance-num {
+    font-size: 56px;
+    font-weight: 900;
+    color: var(--blue);
+    text-shadow: 0 0 20px rgba(79,172,254,0.4);
+    letter-spacing: -2px;
+    line-height: 1;
+    transition: all 0.3s;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .distance-unit {
+    font-size: 18px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  /* Distance input row */
+  .dist-input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+
+  .dist-input-row input {
+    flex: 1;
+    background: rgba(79,172,254,0.05);
+    border: 1px solid rgba(79,172,254,0.2);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Orbitron', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 12px 16px;
+    text-align: center;
+    outline: none;
+    transition: all 0.3s;
+    -moz-appearance: textfield;
+  }
+
+  .dist-input-row input::-webkit-outer-spin-button,
+  .dist-input-row input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .dist-input-row input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 20px rgba(79,172,254,0.3);
+  }
+
+  .add-btn {
+    background: linear-gradient(135deg, var(--blue), #00c6fb);
+    border: none;
+    border-radius: 10px;
+    color: #0a0c10;
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    font-weight: 900;
+    padding: 12px 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .add-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(79,172,254,0.5); }
+  .add-btn:active { transform: scale(0.97); }
+
+  .dist-hint {
+    font-family: 'Noto Nastaliq Urdu', serif;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    direction: rtl;
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .stat-box {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: 1px;
+  }
+
+  .stat-lbl {
+    font-family: 'Noto Nastaliq Urdu', serif;
+    font-size: 11px;
+    color: var(--muted);
+    direction: rtl;
+    margin-top: 4px;
+  }
+
+  /* Buttons */
+  .btn-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn {
+    flex: 1;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Orbitron', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-transform: uppercase;
+  }
+
+  .btn-start {
+    background: linear-gradient(135deg, var(--green), var(--green2));
+    color: #0a0c10;
+    box-shadow: 0 4px 20px rgba(0,255,135,0.3);
+  }
+
+  .btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,255,135,0.45); }
+  .btn-start:active { transform: translateY(0); }
+
+  .btn-stop {
+    background: rgba(255,107,53,0.15);
+    border: 1px solid rgba(255,107,53,0.4);
+    color: var(--orange);
+  }
+
+  .btn-stop:hover { background: rgba(255,107,53,0.25); transform: translateY(-2px); }
+
+  .btn-reset {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--muted);
+  }
+
+  .btn-reset:hover { background: rgba(255,255,255,0.1); }
+
+  /* Status bar */
+  .status-bar {
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+    transition: all 0.4s;
+  }
+
+  .status-running {
+    background: rgba(0,255,135,0.08);
+    border: 1px solid rgba(0,255,135,0.2);
+    color: var(--green);
+  }
+
+  .status-paused {
+    background: rgba(255,107,53,0.08);
+    border: 1px solid rgba(255,107,53,0.2);
+    color: var(--orange);
+  }
+
+  .status-idle {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--muted);
+  }
+
+  .status-done {
+    background: rgba(255,68,68,0.1);
+    border: 1px solid rgba(255,68,68,0.3);
+    color: #ff6666;
+    animation: flashBorder 1s ease-in-out infinite;
+  }
+
+  @keyframes flashBorder {
+    0%,100% { border-color: rgba(255,68,68,0.3); }
+    50% { border-color: rgba(255,68,68,0.8); }
+  }
+
+  /* Pace display */
+  .pace-display {
+    display: flex;
+    justify-content: space-around;
+    padding: 16px 0 0;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+
+  .pace-item { text-align: center; }
+
+  .pace-val {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--orange);
+  }
+
+  .pace-lbl {
+    font-family: 'Noto Nastaliq Urdu', serif;
+    font-size: 11px;
+    color: var(--muted);
+    direction: rtl;
+    margin-top: 2px;
+  }
+
+  /* Finish overlay */
+  .finish-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,12,16,0.92);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .finish-overlay.show { display: flex; }
+
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+  .finish-card {
+    background: var(--card);
+    border: 1px solid var(--green);
+    border-radius: 24px;
+    padding: 40px 32px;
+    text-align: center;
+    max-width: 340px;
+    width: 90%;
+    box-shadow: 0 0 60px rgba(0,255,135,0.2);
+    animation: scaleIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  @keyframes scaleIn { from{transform:scale(0.8);opacity:0} to{transform:scale(1);opacity:1} }
+
+  .finish-emoji { font-size: 60px; margin-bottom: 12px; }
+
+  .finish-title {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: var(--green);
+    margin-bottom: 20px;
+    text-shadow: var(--glow);
+  }
+
+  .finish-stats { margin-bottom: 24px; }
+
+  .finish-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .finish-stat:last-child { border-bottom: none; }
+
+  .finish-stat .lbl {
+    font-family: 'Noto Nastaliq Urdu', serif;
+    color: var(--muted);
+    direction: rtl;
+  }
+
+  .finish-stat .val { color: var(--green); font-weight: 700; }
+
+  .btn-close-finish {
+    background: linear-gradient(135deg, var(--green), var(--green2));
+    border: none;
+    border-radius: 12px;
+    color: #0a0c10;
+    font-family: 'Orbitron', monospace;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    padding: 14px 32px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-close-finish:hover { transform: scale(1.05); }
+
+  /* Running dots animation */
+  .running-indicator {
+    display: none;
+    gap: 4px;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .running-indicator.show { display: flex; }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: bounce 0.6s ease-in-out infinite;
+  }
+
+  .dot:nth-child(2) { animation-delay: 0.1s; }
+  .dot:nth-child(3) { animation-delay: 0.2s; }
+
+  @keyframes bounce { 0%,100%{transform:translateY(0);opacity:0.4} 50%{transform:translateY(-6px);opacity:1} }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="icon">🏃</div>
+    <h1>RunTrack</h1>
+    <p>اپنی دوڑ کا ریکارڈ رکھیں</p>
+  </div>
+
+  <!-- COUNTDOWN TIMER CARD -->
+  <div class="card">
+    <div class="card-label">⏱ Countdown Timer</div>
+
+    <div class="progress-ring-container">
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <circle class="ring-bg" cx="50" cy="50" r="45"/>
+        <circle class="ring-fill" id="ringFill" cx="50" cy="50" r="45"/>
+      </svg>
+      <div class="ring-text">
+        <div id="ringPct">100%</div>
+      </div>
+    </div>
+
+    <div class="timer-display">
+      <div class="timer-digits" id="timerDisplay">07:00</div>
+      <div class="timer-label-text" id="timerSubLabel">مقررہ وقت سیٹ کریں</div>
+    </div>
+
+    <!-- Time setter -->
+    <div class="time-setter" id="timeSetter">
+      <div class="time-unit">
+        <label>MIN</label>
+        <input type="number" id="setMin" value="7" min="0" max="99" placeholder="07">
+      </div>
+      <div class="colon">:</div>
+      <div class="time-unit">
+        <label>SEC</label>
+        <input type="number" id="setSec" value="0" min="0" max="59" placeholder="00">
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="status-bar status-idle" id="statusBar">● READY</div>
+    <div class="running-indicator" id="runDots">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-start" id="startBtn" onclick="startTimer()">▶ START</button>
+      <button class="btn btn-stop" id="pauseBtn" onclick="pauseTimer()" disabled>⏸ PAUSE</button>
+      <button class="btn btn-reset" onclick="resetTimer()">↺ RESET</button>
+    </div>
+  </div>
+
+  <!-- DISTANCE CARD -->
+  <div class="card">
+    <div class="card-label">📍 Distance Tracker</div>
+
+    <div class="distance-display">
+      <div class="distance-num" id="distDisplay">0.00</div>
+      <div class="distance-unit">KM</div>
+    </div>
+
+    <div class="dist-input-row">
+      <input type="number" id="distInput" placeholder="مسافت درج کریں (km)" step="0.01" min="0">
+      <button class="add-btn" onclick="addDistance()">+ ADD</button>
+    </div>
+    <div class="dist-hint">مثلاً: 1.5 یا 0.5 کلومیٹر</div>
+
+    <div class="pace-display" id="paceDisplay">
+      <div class="pace-item">
+        <div class="pace-val" id="paceVal">--:--</div>
+        <div class="pace-lbl">فی کلومیٹر رفتار</div>
+      </div>
+      <div class="pace-item">
+        <div class="pace-val" id="speedVal">0.0</div>
+        <div class="pace-lbl">km/h اوسط رفتار</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS CARD -->
+  <div class="card">
+    <div class="card-label">📊 Session Stats</div>
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-val" id="totalTimeVal">00:00</div>
+        <div class="stat-lbl">کل وقت گزرا</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="totalDistVal">0.00 km</div>
+        <div class="stat-lbl">کل مسافت</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="calorieVal">0</div>
+        <div class="stat-lbl">تخمینی کیلوریز</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="stepsVal">0</div>
+        <div class="stat-lbl">تخمینی قدم</div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-reset" style="color:#ff6666;border-color:rgba(255,68,68,0.3)" onclick="clearAll()">🗑 سب صاف کریں</button>
+    </div>
+  </div>
+</div>
+
+<!-- Finish Overlay -->
+<div class="finish-overlay" id="finishOverlay">
+  <div class="finish-card">
+    <div class="finish-emoji">🏅</div>
+    <div class="finish-title">TIME UP!</div>
+    <div class="finish-stats">
+      <div class="finish-stat">
+        <span class="val" id="fTotalDist">0.00 km</span>
+        <span class="lbl">کل مسافت</span>
+      </div>
+      <div class="finish-stat">
+        <span class="val" id="fTotalTime">00:00</span>
+        <span class="lbl">کل وقت</span>
+      </div>
+      <div class="finish-stat">
+        <span class="val" id="fPace">--:--</span>
+        <span class="lbl">اوسط رفتار (فی کلومیٹر)</span>
+      </div>
+      <div class="finish-stat">
+        <span class="val" id="fCalories">0 kcal</span>
+        <span class="lbl">کیلوریز خرچ</span>
+      </div>
+    </div>
+    <button class="btn-close-finish" onclick="closeFinish()">✓ DONE</button>
+  </div>
+</div>
+
+<script>
+  // State
+  let timerInterval = null;
+  let elapsedInterval = null;
+  let remainingSeconds = 0;
+  let totalSeconds = 0;
+  let elapsedSeconds = 0;
+  let totalDistance = 0;
+  let isRunning = false;
+  let isPaused = false;
+
+  const circumference = 2 * Math.PI * 45; // 282.74
+
+  // Format time
+  function fmt(s) {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  }
+
+  // Update ring
+  function updateRing(remaining, total) {
+    const pct = total > 0 ? remaining / total : 1;
+    const offset = circumference * (1 - pct);
+    const ring = document.getElementById('ringFill');
+    ring.style.strokeDashoffset = offset;
+
+    // Color change
+    if (pct <= 0.2) ring.style.stroke = '#ff4444';
+    else if (pct <= 0.4) ring.style.stroke = '#ff6b35';
+    else ring.style.stroke = '#00ff87';
+
+    document.getElementById('ringPct').textContent = Math.round(pct * 100) + '%';
+  }
+
+  // Start timer
+  function startTimer() {
+    if (isPaused && remainingSeconds > 0) {
+      // Resume
+      isRunning = true;
+      isPaused = false;
+      runTimer();
+      startElapsed();
+      setStatus('running');
+      document.getElementById('startBtn').textContent = '▶ RUNNING';
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('pauseBtn').disabled = false;
+      document.getElementById('timeSetter').style.opacity = '0.4';
+      return;
+    }
+
+    const mins = parseInt(document.getElementById('setMin').value) || 0;
+    const secs = parseInt(document.getElementById('setSec').value) || 0;
+    totalSeconds = mins * 60 + secs;
+    remainingSeconds = totalSeconds;
+
+    if (totalSeconds <= 0) {
+      alert('Please set a time greater than 0!');
+      return;
+    }
+
+    isRunning = true;
+    isPaused = false;
+    elapsedSeconds = 0;
+
+    updateDisplay();
+    updateRing(remainingSeconds, totalSeconds);
+    runTimer();
+    startElapsed();
+    setStatus('running');
+
+    document.getElementById('startBtn').textContent = '▶ RUNNING';
+    document.getElementById('startBtn').disabled = true;
+    document.getElementById('pauseBtn').disabled = false;
+    document.getElementById('timeSetter').style.opacity = '0.4';
+    document.getElementById('timeSetter').style.pointerEvents = 'none';
+  }
+
+  function runTimer() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      if (remainingSeconds <= 0) {
+        clearInterval(timerInterval);
+        timerFinished();
+        return;
+      }
+      remainingSeconds--;
+      updateDisplay();
+      updateRing(remainingSeconds, totalSeconds);
+    }, 1000);
+  }
+
+  function startElapsed() {
+    clearInterval(elapsedInterval);
+    elapsedInterval = setInterval(() => {
+      elapsedSeconds++;
+      document.getElementById('totalTimeVal').textContent = fmt(elapsedSeconds);
+      updateStats();
+    }, 1000);
+  }
+
+  function updateDisplay() {
+    const el = document.getElementById('timerDisplay');
+    el.textContent = fmt(remainingSeconds);
+
+    const pct = totalSeconds > 0 ? remainingSeconds / totalSeconds : 1;
+    if (remainingSeconds === 0) {
+      el.className = 'timer-digits finished';
+    } else if (pct <= 0.25) {
+      el.className = 'timer-digits warning';
+      document.getElementById('timerSubLabel').textContent = '⚠️ وقت ختم ہونے والا ہے!';
+    } else {
+      el.className = 'timer-digits';
+      document.getElementById('timerSubLabel').textContent = 'باقی وقت';
+    }
+  }
+
+  function pauseTimer() {
+    if (isRunning) {
+      clearInterval(timerInterval);
+      clearInterval(elapsedInterval);
+      isRunning = false;
+      isPaused = true;
+      setStatus('paused');
+      document.getElementById('startBtn').textContent = '▶ RESUME';
+      document.getElementById('startBtn').disabled = false;
+      document.getElementById('pauseBtn').disabled = true;
+    }
+  }
+
+  function resetTimer() {
+    clearInterval(timerInterval);
+    clearInterval(elapsedInterval);
+    isRunning = false;
+    isPaused = false;
+    remainingSeconds = 0;
+    elapsedSeconds = 0;
+    totalSeconds = 0;
+
+    document.getElementById('timerDisplay').textContent = '00:00';
+    document.getElementById('timerDisplay').className = 'timer-digits';
+    document.getElementById('timerSubLabel').textContent = 'مقررہ وقت سیٹ کریں';
+    document.getElementById('ringPct').textContent = '100%';
+    document.getElementById('ringFill').style.strokeDashoffset = 0;
+    document.getElementById('ringFill').style.stroke = '#00ff87';
+    document.getElementById('startBtn').textContent = '▶ START';
+    document.getElementById('startBtn').disabled = false;
+    document.getElementById('pauseBtn').disabled = true;
+    document.getElementById('timeSetter').style.opacity = '1';
+    document.getElementById('timeSetter').style.pointerEvents = 'auto';
+    document.getElementById('totalTimeVal').textContent = '00:00';
+    setStatus('idle');
+    updateStats();
+  }
+
+  function timerFinished() {
+    clearInterval(elapsedInterval);
+    isRunning = false;
+    setStatus('done');
+
+    document.getElementById('startBtn').textContent = '▶ START';
+    document.getElementById('startBtn').disabled = false;
+    document.getElementById('pauseBtn').disabled = true;
+    document.getElementById('timeSetter').style.opacity = '1';
+    document.getElementById('timeSetter').style.pointerEvents = 'auto';
+
+    // Show finish overlay
+    document.getElementById('fTotalDist').textContent = totalDistance.toFixed(2) + ' km';
+    document.getElementById('fTotalTime').textContent = fmt(elapsedSeconds);
+    document.getElementById('fPace').textContent = calcPaceStr();
+    document.getElementById('fCalories').textContent = Math.round(totalDistance * 65) + ' kcal';
+
+    setTimeout(() => {
+      document.getElementById('finishOverlay').classList.add('show');
+    }, 500);
+
+    // Vibrate if supported
+    if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+  }
+
+  function closeFinish() {
+    document.getElementById('finishOverlay').classList.remove('show');
+  }
+
+  function setStatus(state) {
+    const bar = document.getElementById('statusBar');
+    const dots = document.getElementById('runDots');
+    if (state === 'running') {
+      bar.className = 'status-bar status-running';
+      bar.textContent = '● RUNNING';
+      dots.classList.add('show');
+    } else if (state === 'paused') {
+      bar.className = 'status-bar status-paused';
+      bar.textContent = '⏸ PAUSED';
+      dots.classList.remove('show');
+    } else if (state === 'done') {
+      bar.className = 'status-bar status-done';
+      bar.textContent = '🏁 FINISHED!';
+      dots.classList.remove('show');
+    } else {
+      bar.className = 'status-bar status-idle';
+      bar.textContent = '● READY';
+      dots.classList.remove('show');
+    }
+  }
+
+  // Distance
+  function addDistance() {
+    const val = parseFloat(document.getElementById('distInput').value);
+    if (isNaN(val) || val <= 0) return;
+    totalDistance += val;
+    document.getElementById('distInput').value = '';
+    document.getElementById('distDisplay').textContent = totalDistance.toFixed(2);
+    document.getElementById('totalDistVal').textContent = totalDistance.toFixed(2) + ' km';
+    updateStats();
+
+    // Flash animation
+    const el = document.getElementById('distDisplay');
+    el.style.transform = 'scale(1.15)';
+    setTimeout(() => { el.style.transform = 'scale(1)'; }, 200);
+  }
+
+  function calcPaceStr() {
+    if (totalDistance <= 0 || elapsedSeconds <= 0) return '--:--';
+    const secPerKm = elapsedSeconds / totalDistance;
+    const m = Math.floor(secPerKm / 60);
+    const s = Math.round(secPerKm % 60);
+    return `${m}:${String(s).padStart(2,'0')}`;
+  }
+
+  function updateStats() {
+    // Pace
+    document.getElementById('paceVal').textContent = calcPaceStr();
+
+    // Speed km/h
+    const speed = elapsedSeconds > 0 ? (totalDistance / elapsedSeconds * 3600) : 0;
+    document.getElementById('speedVal').textContent = speed.toFixed(1);
+
+    // Calories (approx 65 kcal per km for avg person)
+    const cal = Math.round(totalDistance * 65);
+    document.getElementById('calorieVal').textContent = cal;
+
+    // Steps (approx 1312 steps per km)
+    const steps = Math.round(totalDistance * 1312);
+    document.getElementById('stepsVal').textContent = steps.toLocaleString();
+  }
+
+  function clearAll() {
+    resetTimer();
+    totalDistance = 0;
+    elapsedSeconds = 0;
+    document.getElementById('distDisplay').textContent = '0.00';
+    document.getElementById('totalDistVal').textContent = '0.00 km';
+    document.getElementById('calorieVal').textContent = '0';
+    document.getElementById('stepsVal').textContent = '0';
+    document.getElementById('paceVal').textContent = '--:--';
+    document.getElementById('speedVal').textContent = '0.0';
+    document.getElementById('totalTimeVal').textContent = '00:00';
+  }
+
+  // Live timer display update from setter
+  document.getElementById('setMin').addEventListener('input', previewTime);
+  document.getElementById('setSec').addEventListener('input', previewTime);
+
+  function previewTime() {
+    if (!isRunning && !isPaused) {
+      const m = parseInt(document.getElementById('setMin').value) || 0;
+      const s = parseInt(document.getElementById('setSec').value) || 0;
+      document.getElementById('timerDisplay').textContent = fmt(m * 60 + s);
+      document.getElementById('ringFill').style.strokeDashoffset = 0;
+      document.getElementById('ringPct').textContent = '100%';
+    }
+  }
+
+  // Enter key adds distance
+  document.getElementById('distInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addDistance();
+  });
+
+  // Init
+  previewTime();
+
+  // PWA Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('RunTrack PWA ready ✓'))
+      .catch(e => console.log('SW error:', e));
+  }
+</script>
+</body>
+</html>
