@@ -12,1023 +12,337 @@
 <link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Nastaliq+Urdu:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #0a0c10;
-    --card: #12151c;
-    --green: #00ff87;
-    --green2: #00c96b;
-    --orange: #ff6b35;
-    --blue: #4facfe;
-    --text: #e8eaf0;
-    --muted: #5a6080;
-    --glow: 0 0 20px rgba(0,255,135,0.4);
-    --border: rgba(0,255,135,0.15);
-  }
-
-  body {
-    background: var(--bg);
-    font-family: 'Orbitron', monospace;
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px 16px 40px;
-    position: relative;
-    overflow-x: hidden;
-  }
-
-  /* Animated background grid */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(0,255,135,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,255,135,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    animation: gridMove 20s linear infinite;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  body::after {
-    content: '';
-    position: fixed;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(ellipse at 60% 30%, rgba(0,255,135,0.05) 0%, transparent 60%),
-                radial-gradient(ellipse at 20% 80%, rgba(79,172,254,0.05) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  @keyframes gridMove {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(40px); }
-  }
-
-  .container { position: relative; z-index: 1; width: 100%; max-width: 420px; }
-
-  /* Header */
-  .header {
-    text-align: center;
-    margin-bottom: 28px;
-    animation: fadeDown 0.6s ease;
-  }
-
-  .header .icon {
-    font-size: 40px;
-    margin-bottom: 6px;
-    filter: drop-shadow(0 0 12px rgba(0,255,135,0.6));
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
-
-  .header h1 {
-    font-size: 22px;
-    font-weight: 900;
-    letter-spacing: 4px;
-    background: linear-gradient(135deg, var(--green), var(--blue));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-transform: uppercase;
-  }
-
-  .header p {
-    font-family: 'Noto Nastaliq Urdu', serif;
-    font-size: 13px;
-    color: var(--muted);
-    margin-top: 4px;
-    direction: rtl;
-  }
-
-  /* Cards */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 24px;
-    margin-bottom: 16px;
-    position: relative;
-    overflow: hidden;
-    animation: fadeUp 0.5s ease backwards;
-  }
-
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--green), transparent);
-    opacity: 0.5;
-  }
-
-  .card:nth-child(1) { animation-delay: 0.1s; }
-  .card:nth-child(2) { animation-delay: 0.2s; }
-  .card:nth-child(3) { animation-delay: 0.3s; }
-
-  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
-
-  .card-label {
-    font-size: 10px;
-    letter-spacing: 3px;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .card-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  /* Countdown Timer Display */
-  .timer-display {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-
-  .timer-digits {
-    font-size: 68px;
-    font-weight: 900;
-    letter-spacing: -2px;
-    line-height: 1;
-    color: var(--green);
-    text-shadow: var(--glow);
-    transition: color 0.5s, text-shadow 0.5s;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .timer-digits.warning {
-    color: var(--orange);
-    text-shadow: 0 0 20px rgba(255,107,53,0.5);
-    animation: timerPulse 1s ease-in-out infinite;
-  }
-
-  .timer-digits.finished {
-    color: #ff4444;
-    text-shadow: 0 0 20px rgba(255,68,68,0.6);
-  }
-
-  @keyframes timerPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
-
-  .timer-label-text {
-    font-family: 'Noto Nastaliq Urdu', serif;
-    font-size: 13px;
-    color: var(--muted);
-    direction: rtl;
-    margin-top: 6px;
-  }
-
-  /* Progress ring */
-  .progress-ring-container {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 16px;
-    position: relative;
-  }
-
-  .progress-ring-container svg { transform: rotate(-90deg); }
-
-  .ring-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 6; }
-
-  .ring-fill {
-    fill: none;
-    stroke: var(--green);
-    stroke-width: 6;
-    stroke-linecap: round;
-    stroke-dasharray: 283;
-    stroke-dashoffset: 0;
-    transition: stroke-dashoffset 1s linear, stroke 0.5s;
-    filter: drop-shadow(0 0 6px rgba(0,255,135,0.6));
-  }
-
-  .ring-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 1px;
-  }
-
-  /* Time Setter */
-  .time-setter {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 16px;
-  }
-
-  .time-unit { text-align: center; }
-
-  .time-unit label {
-    display: block;
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
-
-  .time-unit input {
-    background: rgba(0,255,135,0.05);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-family: 'Orbitron', monospace;
-    font-size: 22px;
-    font-weight: 700;
-    width: 72px;
-    height: 52px;
-    text-align: center;
-    outline: none;
-    transition: all 0.3s;
-    -moz-appearance: textfield;
-  }
-
-  .time-unit input::-webkit-outer-spin-button,
-  .time-unit input::-webkit-inner-spin-button { -webkit-appearance: none; }
-
-  .time-unit input:focus {
-    border-color: var(--green);
-    box-shadow: var(--glow);
-    background: rgba(0,255,135,0.08);
-  }
-
-  .colon {
-    font-size: 28px;
-    font-weight: 900;
-    color: var(--green);
-    margin-top: 14px;
-    opacity: 0.6;
-  }
-
-  /* Distance display */
-  .distance-display {
-    display: flex;
-    align-items: baseline;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-
-  .distance-num {
-    font-size: 56px;
-    font-weight: 900;
-    color: var(--blue);
-    text-shadow: 0 0 20px rgba(79,172,254,0.4);
-    letter-spacing: -2px;
-    line-height: 1;
-    transition: all 0.3s;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .distance-unit {
-    font-size: 18px;
-    color: var(--muted);
-    letter-spacing: 2px;
-  }
-
-  /* Distance input row */
-  .dist-input-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 4px;
-  }
-
-  .dist-input-row input {
-    flex: 1;
-    background: rgba(79,172,254,0.05);
-    border: 1px solid rgba(79,172,254,0.2);
-    border-radius: 10px;
-    color: var(--text);
-    font-family: 'Orbitron', monospace;
-    font-size: 16px;
-    font-weight: 700;
-    padding: 12px 16px;
-    text-align: center;
-    outline: none;
-    transition: all 0.3s;
-    -moz-appearance: textfield;
-  }
-
-  .dist-input-row input::-webkit-outer-spin-button,
-  .dist-input-row input::-webkit-inner-spin-button { -webkit-appearance: none; }
-
-  .dist-input-row input:focus {
-    border-color: var(--blue);
-    box-shadow: 0 0 20px rgba(79,172,254,0.3);
-  }
-
-  .add-btn {
-    background: linear-gradient(135deg, var(--blue), #00c6fb);
-    border: none;
-    border-radius: 10px;
-    color: #0a0c10;
-    font-family: 'Orbitron', monospace;
-    font-size: 14px;
-    font-weight: 900;
-    padding: 12px 18px;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 1px;
-  }
-
-  .add-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(79,172,254,0.5); }
-  .add-btn:active { transform: scale(0.97); }
-
-  .dist-hint {
-    font-family: 'Noto Nastaliq Urdu', serif;
-    font-size: 12px;
-    color: var(--muted);
-    text-align: center;
-    direction: rtl;
-  }
-
-  /* Stats row */
-  .stats-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-
-  .stat-box {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px;
-    text-align: center;
-  }
-
-  .stat-val {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--green);
-    letter-spacing: 1px;
-  }
-
-  .stat-lbl {
-    font-family: 'Noto Nastaliq Urdu', serif;
-    font-size: 11px;
-    color: var(--muted);
-    direction: rtl;
-    margin-top: 4px;
-  }
-
-  /* Buttons */
-  .btn-row {
-    display: flex;
-    gap: 10px;
-  }
-
-  .btn {
-    flex: 1;
-    border: none;
-    border-radius: 14px;
-    font-family: 'Orbitron', monospace;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    padding: 14px;
-    cursor: pointer;
-    transition: all 0.25s;
-    text-transform: uppercase;
-  }
-
-  .btn-start {
-    background: linear-gradient(135deg, var(--green), var(--green2));
-    color: #0a0c10;
-    box-shadow: 0 4px 20px rgba(0,255,135,0.3);
-  }
-
-  .btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,255,135,0.45); }
-  .btn-start:active { transform: translateY(0); }
-
-  .btn-stop {
-    background: rgba(255,107,53,0.15);
-    border: 1px solid rgba(255,107,53,0.4);
-    color: var(--orange);
-  }
-
-  .btn-stop:hover { background: rgba(255,107,53,0.25); transform: translateY(-2px); }
-
-  .btn-reset {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    color: var(--muted);
-  }
-
-  .btn-reset:hover { background: rgba(255,255,255,0.1); }
-
-  /* Status bar */
-  .status-bar {
-    text-align: center;
-    padding: 10px;
-    border-radius: 10px;
-    font-size: 11px;
-    letter-spacing: 2px;
-    margin-bottom: 16px;
-    transition: all 0.4s;
-  }
-
-  .status-running {
-    background: rgba(0,255,135,0.08);
-    border: 1px solid rgba(0,255,135,0.2);
-    color: var(--green);
-  }
-
-  .status-paused {
-    background: rgba(255,107,53,0.08);
-    border: 1px solid rgba(255,107,53,0.2);
-    color: var(--orange);
-  }
-
-  .status-idle {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    color: var(--muted);
-  }
-
-  .status-done {
-    background: rgba(255,68,68,0.1);
-    border: 1px solid rgba(255,68,68,0.3);
-    color: #ff6666;
-    animation: flashBorder 1s ease-in-out infinite;
-  }
-
-  @keyframes flashBorder {
-    0%,100% { border-color: rgba(255,68,68,0.3); }
-    50% { border-color: rgba(255,68,68,0.8); }
-  }
-
-  /* Pace display */
-  .pace-display {
-    display: flex;
-    justify-content: space-around;
-    padding: 16px 0 0;
-    border-top: 1px solid var(--border);
-    margin-top: 4px;
-  }
-
-  .pace-item { text-align: center; }
-
-  .pace-val {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--orange);
-  }
-
-  .pace-lbl {
-    font-family: 'Noto Nastaliq Urdu', serif;
-    font-size: 11px;
-    color: var(--muted);
-    direction: rtl;
-    margin-top: 2px;
-  }
-
-  /* Finish overlay */
-  .finish-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(10,12,16,0.92);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    animation: fadeIn 0.4s ease;
-  }
-
-  .finish-overlay.show { display: flex; }
-
-  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-
-  .finish-card {
-    background: var(--card);
-    border: 1px solid var(--green);
-    border-radius: 24px;
-    padding: 40px 32px;
-    text-align: center;
-    max-width: 340px;
-    width: 90%;
-    box-shadow: 0 0 60px rgba(0,255,135,0.2);
-    animation: scaleIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
-  }
-
-  @keyframes scaleIn { from{transform:scale(0.8);opacity:0} to{transform:scale(1);opacity:1} }
-
-  .finish-emoji { font-size: 60px; margin-bottom: 12px; }
-
-  .finish-title {
-    font-size: 20px;
-    font-weight: 900;
-    letter-spacing: 3px;
-    color: var(--green);
-    margin-bottom: 20px;
-    text-shadow: var(--glow);
-  }
-
-  .finish-stats { margin-bottom: 24px; }
-
-  .finish-stat {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-  }
-
-  .finish-stat:last-child { border-bottom: none; }
-
-  .finish-stat .lbl {
-    font-family: 'Noto Nastaliq Urdu', serif;
-    color: var(--muted);
-    direction: rtl;
-  }
-
-  .finish-stat .val { color: var(--green); font-weight: 700; }
-
-  .btn-close-finish {
-    background: linear-gradient(135deg, var(--green), var(--green2));
-    border: none;
-    border-radius: 12px;
-    color: #0a0c10;
-    font-family: 'Orbitron', monospace;
-    font-size: 12px;
-    font-weight: 900;
-    letter-spacing: 2px;
-    padding: 14px 32px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .btn-close-finish:hover { transform: scale(1.05); }
-
-  /* Running dots animation */
-  .running-indicator {
-    display: none;
-    gap: 4px;
-    justify-content: center;
-    margin-top: 8px;
-  }
-
-  .running-indicator.show { display: flex; }
-
-  .dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--green);
-    animation: bounce 0.6s ease-in-out infinite;
-  }
-
-  .dot:nth-child(2) { animation-delay: 0.1s; }
-  .dot:nth-child(3) { animation-delay: 0.2s; }
-
-  @keyframes bounce { 0%,100%{transform:translateY(0);opacity:0.4} 50%{transform:translateY(-6px);opacity:1} }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0c10;--card:#12151c;--green:#00ff87;--green2:#00c96b;--orange:#ff6b35;--blue:#4facfe;--text:#e8eaf0;--muted:#5a6080;--glow:0 0 20px rgba(0,255,135,0.4);--border:rgba(0,255,135,0.15)}
+body{background:var(--bg);font-family:'Orbitron',monospace;color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,135,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,135,0.03) 1px,transparent 1px);background-size:40px 40px;animation:gridMove 20s linear infinite;pointer-events:none;z-index:0}
+@keyframes gridMove{0%{transform:translateY(0)}100%{transform:translateY(40px)}}
+.container{position:relative;z-index:1;width:100%;max-width:420px}
+.header{text-align:center;margin-bottom:24px}
+.header .icon{font-size:40px;margin-bottom:6px;filter:drop-shadow(0 0 12px rgba(0,255,135,0.6));animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.header h1{font-size:22px;font-weight:900;letter-spacing:4px;background:linear-gradient(135deg,var(--green),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header p{font-family:'Noto Nastaliq Urdu',serif;font-size:13px;color:var(--muted);direction:rtl;margin-top:4px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:22px;margin-bottom:14px;position:relative;overflow:hidden;animation:fadeUp 0.5s ease backwards}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:0.5}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.card-label{font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.gps-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;margin-bottom:14px;font-size:11px;letter-spacing:1px;transition:all 0.4s}
+.gps-idle{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:var(--muted)}
+.gps-searching{background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.3);color:var(--orange)}
+.gps-active{background:rgba(0,255,135,0.08);border:1px solid rgba(0,255,135,0.3);color:var(--green)}
+.gps-error{background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.3);color:#ff6666}
+.gps-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
+.gps-active .gps-dot{animation:blink 1s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.distance-big{text-align:center;margin-bottom:10px}
+.dist-num{font-size:72px;font-weight:900;color:var(--blue);text-shadow:0 0 20px rgba(79,172,254,0.4);letter-spacing:-3px;line-height:1;font-variant-numeric:tabular-nums}
+.dist-unit-row{display:flex;justify-content:center;gap:16px;margin-top:6px}
+.dist-unit-btn{padding:5px 14px;border-radius:20px;font-family:'Orbitron',monospace;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;border:1px solid var(--border);background:transparent;color:var(--muted)}
+.dist-unit-btn.active{background:rgba(79,172,254,0.15);border-color:var(--blue);color:var(--blue)}
+.timer-row{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+.timer-big{font-size:48px;font-weight:900;color:var(--green);text-shadow:var(--glow);font-variant-numeric:tabular-nums;transition:color 0.5s}
+.timer-big.warning{color:var(--orange);animation:tpulse 1s ease-in-out infinite}
+.timer-big.done{color:#ff4444}
+@keyframes tpulse{0%,100%{opacity:1}50%{opacity:0.6}}
+.timer-set{flex:1}
+.timer-set label{font-size:9px;letter-spacing:2px;color:var(--muted);display:block;margin-bottom:6px}
+.timer-inputs{display:flex;align-items:center;gap:6px}
+.timer-inputs input{width:56px;height:44px;background:rgba(0,255,135,0.05);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Orbitron',monospace;font-size:18px;font-weight:700;text-align:center;outline:none;transition:all 0.3s;-moz-appearance:textfield}
+.timer-inputs input::-webkit-outer-spin-button,.timer-inputs input::-webkit-inner-spin-button{-webkit-appearance:none}
+.timer-inputs input:focus{border-color:var(--green);box-shadow:var(--glow)}
+.timer-colon{font-size:22px;font-weight:900;color:var(--green);opacity:0.6}
+.progress-wrap{height:6px;background:rgba(255,255,255,0.05);border-radius:3px;margin-bottom:14px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),var(--blue));transition:width 1s linear;filter:drop-shadow(0 0 4px rgba(0,255,135,0.5))}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat-box{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center}
+.stat-val{font-size:18px;font-weight:700;color:var(--green)}
+.stat-val.blue{color:var(--blue)}
+.stat-val.orange{color:var(--orange)}
+.stat-lbl{font-family:'Noto Nastaliq Urdu',serif;font-size:11px;color:var(--muted);direction:rtl;margin-top:3px}
+.status-bar{text-align:center;padding:9px;border-radius:10px;font-size:11px;letter-spacing:2px;margin-bottom:12px;transition:all 0.4s}
+.s-idle{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:var(--muted)}
+.s-running{background:rgba(0,255,135,0.08);border:1px solid rgba(0,255,135,0.2);color:var(--green)}
+.s-paused{background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.2);color:var(--orange)}
+.s-done{background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:#ff6666;animation:flashB 1s ease-in-out infinite}
+@keyframes flashB{0%,100%{border-color:rgba(255,68,68,0.3)}50%{border-color:rgba(255,68,68,0.8)}}
+.btn-row{display:flex;gap:10px}
+.btn{flex:1;border:none;border-radius:14px;font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:1px;padding:13px 8px;cursor:pointer;transition:all 0.25s;text-transform:uppercase}
+.btn-start{background:linear-gradient(135deg,var(--green),var(--green2));color:#0a0c10;box-shadow:0 4px 20px rgba(0,255,135,0.3)}
+.btn-start:hover{transform:translateY(-2px)}
+.btn-pause{background:rgba(255,107,53,0.15);border:1px solid rgba(255,107,53,0.4);color:var(--orange)}
+.btn-reset{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--muted)}
+.run-dots{display:none;justify-content:center;gap:4px;margin-top:8px}
+.run-dots.show{display:flex}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:bounce 0.6s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:0.1s}.dot:nth-child(3){animation-delay:0.2s}
+@keyframes bounce{0%,100%{transform:translateY(0);opacity:0.4}50%{transform:translateY(-6px);opacity:1}}
+.finish-overlay{display:none;position:fixed;inset:0;background:rgba(10,12,16,0.93);z-index:100;align-items:center;justify-content:center}
+.finish-overlay.show{display:flex}
+.finish-card{background:var(--card);border:1px solid var(--green);border-radius:24px;padding:36px 28px;text-align:center;max-width:320px;width:90%;box-shadow:0 0 60px rgba(0,255,135,0.2);animation:scaleIn 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes scaleIn{from{transform:scale(0.8);opacity:0}to{transform:scale(1);opacity:1}}
+.finish-emoji{font-size:56px;margin-bottom:10px}
+.finish-title{font-size:18px;font-weight:900;letter-spacing:3px;color:var(--green);margin-bottom:18px;text-shadow:var(--glow)}
+.finish-stat{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px}
+.finish-stat:last-child{border:none}
+.finish-stat .lbl{font-family:'Noto Nastaliq Urdu',serif;color:var(--muted);direction:rtl}
+.finish-stat .val{color:var(--green);font-weight:700}
+.btn-done{background:linear-gradient(135deg,var(--green),var(--green2));border:none;border-radius:12px;color:#0a0c10;font-family:'Orbitron',monospace;font-size:12px;font-weight:900;letter-spacing:2px;padding:13px 28px;cursor:pointer;margin-top:18px;transition:all 0.2s}
 </style>
 </head>
 <body>
-
 <div class="container">
   <div class="header">
-    <div class="icon">🏃</div>
-    <h1>RunTrack</h1>
-    <p>اپنی دوڑ کا ریکارڈ رکھیں</p>
-  </div>
+      <div class="icon">🏃</div>
+          <h1>RUNTRACK</h1>
+              <p>GPS سے اپنی دوڑ ٹریک کریں</p>
+                </div>
 
-  <!-- COUNTDOWN TIMER CARD -->
-  <div class="card">
-    <div class="card-label">⏱ Countdown Timer</div>
+                  <div class="card">
+                      <div class="card-label">📍 GPS Distance</div>
+                          <div class="gps-bar gps-idle" id="gpsBar">
+                                <div class="gps-dot"></div>
+                                      <span id="gpsText">GPS بند ہے — Start دبائیں</span>
+                                          </div>
+                                              <div class="distance-big">
+                                                    <div class="dist-num" id="distNum">0.00</div>
+                                                          <div class="dist-unit-row">
+                                                                  <button class="dist-unit-btn active" id="btnKm" onclick="setUnit('km')">KM</button>
+                                                                          <button class="dist-unit-btn" id="btnM" onclick="setUnit('m')">METER</button>
+                                                                                </div>
+                                                                                    </div>
+                                                                                      </div>
 
-    <div class="progress-ring-container">
-      <svg width="100" height="100" viewBox="0 0 100 100">
-        <circle class="ring-bg" cx="50" cy="50" r="45"/>
-        <circle class="ring-fill" id="ringFill" cx="50" cy="50" r="45"/>
-      </svg>
-      <div class="ring-text">
-        <div id="ringPct">100%</div>
-      </div>
-    </div>
+                                                                                        <div class="card">
+                                                                                            <div class="card-label">⏱ Countdown Timer</div>
+                                                                                                <div class="timer-row">
+                                                                                                      <div class="timer-big" id="timerDisp">07:00</div>
+                                                                                                            <div class="timer-set">
+                                                                                                                    <label>وقت سیٹ کریں</label>
+                                                                                                                            <div class="timer-inputs">
+                                                                                                                                      <input type="number" id="setMin" value="7" min="0" max="99">
+                                                                                                                                                <span class="timer-colon">:</span>
+                                                                                                                                                          <input type="number" id="setSec" value="0" min="0" max="59">
+                                                                                                                                                                  </div>
+                                                                                                                                                                        </div>
+                                                                                                                                                                            </div>
+                                                                                                                                                                                <div class="progress-wrap"><div class="progress-fill" id="progressFill" style="width:100%"></div></div>
+                                                                                                                                                                                    <div class="status-bar s-idle" id="statusBar">● READY</div>
+                                                                                                                                                                                        <div class="run-dots" id="runDots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                                                                                                                                                                                            <div class="btn-row" style="margin-top:12px">
+                                                                                                                                                                                                  <button class="btn btn-start" id="startBtn" onclick="startRun()">▶ START</button>
+                                                                                                                                                                                                        <button class="btn btn-pause" id="pauseBtn" onclick="pauseRun()" disabled>⏸ PAUSE</button>
+                                                                                                                                                                                                              <button class="btn btn-reset" onclick="resetAll()">↺ RESET</button>
+                                                                                                                                                                                                                  </div>
+                                                                                                                                                                                                                    </div>
 
-    <div class="timer-display">
-      <div class="timer-digits" id="timerDisplay">07:00</div>
-      <div class="timer-label-text" id="timerSubLabel">مقررہ وقت سیٹ کریں</div>
-    </div>
+                                                                                                                                                                                                                      <div class="card">
+                                                                                                                                                                                                                          <div class="card-label">📊 Live Stats</div>
+                                                                                                                                                                                                                              <div class="stats-grid">
+                                                                                                                                                                                                                                    <div class="stat-box"><div class="stat-val" id="elapsedVal">00:00</div><div class="stat-lbl">گزرا ہوا وقت</div></div>
+                                                                                                                                                                                                                                          <div class="stat-box"><div class="stat-val blue" id="speedVal">0.0</div><div class="stat-lbl">km/h رفتار</div></div>
+                                                                                                                                                                                                                                                <div class="stat-box"><div class="stat-val orange" id="paceVal">--:--</div><div class="stat-lbl">فی کلومیٹر وقت</div></div>
+                                                                                                                                                                                                                                                      <div class="stat-box"><div class="stat-val" id="calVal">0</div><div class="stat-lbl">کیلوریز</div></div>
+                                                                                                                                                                                                                                                          </div>
+                                                                                                                                                                                                                                                              <div class="btn-row">
+                                                                                                                                                                                                                                                                    <button class="btn btn-reset" style="color:#ff6666;border-color:rgba(255,68,68,0.3)" onclick="resetAll()">🗑 سب صاف کریں</button>
+                                                                                                                                                                                                                                                                        </div>
+                                                                                                                                                                                                                                                                          </div>
+                                                                                                                                                                                                                                                                          </div>
 
-    <!-- Time setter -->
-    <div class="time-setter" id="timeSetter">
-      <div class="time-unit">
-        <label>MIN</label>
-        <input type="number" id="setMin" value="7" min="0" max="99" placeholder="07">
-      </div>
-      <div class="colon">:</div>
-      <div class="time-unit">
-        <label>SEC</label>
-        <input type="number" id="setSec" value="0" min="0" max="59" placeholder="00">
-      </div>
-    </div>
+                                                                                                                                                                                                                                                                          <div class="finish-overlay" id="finishOverlay">
+                                                                                                                                                                                                                                                                            <div class="finish-card">
+                                                                                                                                                                                                                                                                                <div class="finish-emoji">🏅</div>
+                                                                                                                                                                                                                                                                                    <div class="finish-title">TIME UP!</div>
+                                                                                                                                                                                                                                                                                        <div class="finish-stat"><span class="val" id="fDist">0.00</span><span class="lbl">کل مسافت</span></div>
+                                                                                                                                                                                                                                                                                            <div class="finish-stat"><span class="val" id="fTime">00:00</span><span class="lbl">کل وقت</span></div>
+                                                                                                                                                                                                                                                                                                <div class="finish-stat"><span class="val" id="fPace">--:--</span><span class="lbl">اوسط رفتار</span></div>
+                                                                                                                                                                                                                                                                                                    <div class="finish-stat"><span class="val" id="fCal">0 kcal</span><span class="lbl">کیلوریز</span></div>
+                                                                                                                                                                                                                                                                                                        <button class="btn-done" onclick="closeFinish()">✓ DONE</button>
+                                                                                                                                                                                                                                                                                                          </div>
+                                                                                                                                                                                                                                                                                                          </div>
 
-    <!-- Status -->
-    <div class="status-bar status-idle" id="statusBar">● READY</div>
-    <div class="running-indicator" id="runDots">
-      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-    </div>
+                                                                                                                                                                                                                                                                                                          <script>
+                                                                                                                                                                                                                                                                                                          let isRunning=false,isPaused=false;
+                                                                                                                                                                                                                                                                                                          let timerInterval=null,elapsedInterval=null,watchId=null;
+                                                                                                                                                                                                                                                                                                          let remainSec=0,totalSec=0,elapsedSec=0;
+                                                                                                                                                                                                                                                                                                          let totalDistM=0,lastPos=null,currentUnit='km',currentSpeed=0;
 
-    <!-- Buttons -->
-    <div class="btn-row" style="margin-top:12px">
-      <button class="btn btn-start" id="startBtn" onclick="startTimer()">▶ START</button>
-      <button class="btn btn-stop" id="pauseBtn" onclick="pauseTimer()" disabled>⏸ PAUSE</button>
-      <button class="btn btn-reset" onclick="resetTimer()">↺ RESET</button>
-    </div>
-  </div>
+                                                                                                                                                                                                                                                                                                          function haversine(lat1,lon1,lat2,lon2){
+                                                                                                                                                                                                                                                                                                            const R=6371000,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+                                                                                                                                                                                                                                                                                                              const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+                                                                                                                                                                                                                                                                                                                return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+                                                                                                                                                                                                                                                                                                                }
 
-  <!-- DISTANCE CARD -->
-  <div class="card">
-    <div class="card-label">📍 Distance Tracker</div>
+                                                                                                                                                                                                                                                                                                                function fmt(s){const m=Math.floor(s/60),sec=s%60;return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')}
 
-    <div class="distance-display">
-      <div class="distance-num" id="distDisplay">0.00</div>
-      <div class="distance-unit">KM</div>
-    </div>
+                                                                                                                                                                                                                                                                                                                function setUnit(u){
+                                                                                                                                                                                                                                                                                                                  currentUnit=u;
+                                                                                                                                                                                                                                                                                                                    document.getElementById('btnKm').className='dist-unit-btn'+(u==='km'?' active':'');
+                                                                                                                                                                                                                                                                                                                      document.getElementById('btnM').className='dist-unit-btn'+(u==='m'?' active':'');
+                                                                                                                                                                                                                                                                                                                        updateDistDisplay();
+                                                                                                                                                                                                                                                                                                                        }
 
-    <div class="dist-input-row">
-      <input type="number" id="distInput" placeholder="مسافت درج کریں (km)" step="0.01" min="0">
-      <button class="add-btn" onclick="addDistance()">+ ADD</button>
-    </div>
-    <div class="dist-hint">مثلاً: 1.5 یا 0.5 کلومیٹر</div>
+                                                                                                                                                                                                                                                                                                                        function updateDistDisplay(){
+                                                                                                                                                                                                                                                                                                                          const val=currentUnit==='km'?(totalDistM/1000).toFixed(2):Math.round(totalDistM).toString();
+                                                                                                                                                                                                                                                                                                                            document.getElementById('distNum').textContent=val;
+                                                                                                                                                                                                                                                                                                                            }
 
-    <div class="pace-display" id="paceDisplay">
-      <div class="pace-item">
-        <div class="pace-val" id="paceVal">--:--</div>
-        <div class="pace-lbl">فی کلومیٹر رفتار</div>
-      </div>
-      <div class="pace-item">
-        <div class="pace-val" id="speedVal">0.0</div>
-        <div class="pace-lbl">km/h اوسط رفتار</div>
-      </div>
-    </div>
-  </div>
+                                                                                                                                                                                                                                                                                                                            function startGPS(){
+                                                                                                                                                                                                                                                                                                                              if(!navigator.geolocation){setGPS('error','GPS support nahi hai');return}
+                                                                                                                                                                                                                                                                                                                                setGPS('searching','🔍 GPS dhundh raha hai...');
+                                                                                                                                                                                                                                                                                                                                  watchId=navigator.geolocation.watchPosition(
+                                                                                                                                                                                                                                                                                                                                      pos=>{
+                                                                                                                                                                                                                                                                                                                                            setGPS('active','✅ GPS Active — Track ho raha hai');
+                                                                                                                                                                                                                                                                                                                                                  if(lastPos&&isRunning){
+                                                                                                                                                                                                                                                                                                                                                          const d=haversine(lastPos.lat,lastPos.lon,pos.coords.latitude,pos.coords.longitude);
+                                                                                                                                                                                                                                                                                                                                                                  if(d>0.5&&d<50){totalDistM+=d;updateDistDisplay();updateStats()}
+                                                                                                                                                                                                                                                                                                                                                                        }
+                                                                                                                                                                                                                                                                                                                                                                              lastPos={lat:pos.coords.latitude,lon:pos.coords.longitude};
+                                                                                                                                                                                                                                                                                                                                                                                    if(pos.coords.speed&&pos.coords.speed>0){
+                                                                                                                                                                                                                                                                                                                                                                                            currentSpeed=pos.coords.speed*3.6;
+                                                                                                                                                                                                                                                                                                                                                                                                    document.getElementById('speedVal').textContent=currentSpeed.toFixed(1);
+                                                                                                                                                                                                                                                                                                                                                                                                          }
+                                                                                                                                                                                                                                                                                                                                                                                                              },
+                                                                                                                                                                                                                                                                                                                                                                                                                  err=>{
+                                                                                                                                                                                                                                                                                                                                                                                                                        let msg='GPS Error';
+                                                                                                                                                                                                                                                                                                                                                                                                                              if(err.code===1)msg='❌ Location allow karein — Settings mein ja ke';
+                                                                                                                                                                                                                                                                                                                                                                                                                                    else if(err.code===2)msg='❌ GPS signal nahi mila — bahar jayein';
+                                                                                                                                                                                                                                                                                                                                                                                                                                          else if(err.code===3)msg='GPS timeout — dobara try karein';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                setGPS('error',msg);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                    },
+                                                                                                                                                                                                                                                                                                                                                                                                                                                        {enableHighAccuracy:true,maximumAge:0,timeout:20000}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                          );
+                                                                                                                                                                                                                                                                                                                                                                                                                                                          }
 
-  <!-- STATS CARD -->
-  <div class="card">
-    <div class="card-label">📊 Session Stats</div>
-    <div class="stats-row">
-      <div class="stat-box">
-        <div class="stat-val" id="totalTimeVal">00:00</div>
-        <div class="stat-lbl">کل وقت گزرا</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-val" id="totalDistVal">0.00 km</div>
-        <div class="stat-lbl">کل مسافت</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-val" id="calorieVal">0</div>
-        <div class="stat-lbl">تخمینی کیلوریز</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-val" id="stepsVal">0</div>
-        <div class="stat-lbl">تخمینی قدم</div>
-      </div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-reset" style="color:#ff6666;border-color:rgba(255,68,68,0.3)" onclick="clearAll()">🗑 سب صاف کریں</button>
-    </div>
-  </div>
-</div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                          function stopGPS(){if(watchId!==null){navigator.geolocation.clearWatch(watchId);watchId=null}setGPS('idle','GPS بند ہے')}
 
-<!-- Finish Overlay -->
-<div class="finish-overlay" id="finishOverlay">
-  <div class="finish-card">
-    <div class="finish-emoji">🏅</div>
-    <div class="finish-title">TIME UP!</div>
-    <div class="finish-stats">
-      <div class="finish-stat">
-        <span class="val" id="fTotalDist">0.00 km</span>
-        <span class="lbl">کل مسافت</span>
-      </div>
-      <div class="finish-stat">
-        <span class="val" id="fTotalTime">00:00</span>
-        <span class="lbl">کل وقت</span>
-      </div>
-      <div class="finish-stat">
-        <span class="val" id="fPace">--:--</span>
-        <span class="lbl">اوسط رفتار (فی کلومیٹر)</span>
-      </div>
-      <div class="finish-stat">
-        <span class="val" id="fCalories">0 kcal</span>
-        <span class="lbl">کیلوریز خرچ</span>
-      </div>
-    </div>
-    <button class="btn-close-finish" onclick="closeFinish()">✓ DONE</button>
-  </div>
-</div>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                          function setGPS(state,msg){
+                                                                                                                                                                                                                                                                                                                                                                                                                                                            document.getElementById('gpsBar').className='gps-bar gps-'+state;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                              document.getElementById('gpsText').textContent=msg;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                              }
 
-<script>
-  // State
-  let timerInterval = null;
-  let elapsedInterval = null;
-  let remainingSeconds = 0;
-  let totalSeconds = 0;
-  let elapsedSeconds = 0;
-  let totalDistance = 0;
-  let isRunning = false;
-  let isPaused = false;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                              function startRun(){
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                if(isPaused){
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                    isRunning=true;isPaused=false;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                        runTimer();startElapsed();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            if(watchId===null)startGPS();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                setStatus('running');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    document.getElementById('startBtn').disabled=true;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        document.getElementById('pauseBtn').disabled=false;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            return;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                const mins=parseInt(document.getElementById('setMin').value)||0;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  const secs=parseInt(document.getElementById('setSec').value)||0;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    totalSec=mins*60+secs;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      if(totalSec<=0){alert('Pehle time set karein!');return}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        remainSec=totalSec;elapsedSec=0;totalDistM=0;lastPos=null;currentSpeed=0;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          isRunning=true;isPaused=false;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            updateDistDisplay();updateTimerDisp();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              runTimer();startElapsed();startGPS();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                setStatus('running');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  document.getElementById('startBtn').disabled=true;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    document.getElementById('pauseBtn').disabled=false;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      document.getElementById('setMin').disabled=true;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        document.getElementById('setSec').disabled=true;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          document.getElementById('progressFill').style.width='100%';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          }
 
-  const circumference = 2 * Math.PI * 45; // 282.74
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          function runTimer(){
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            clearInterval(timerInterval);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              timerInterval=setInterval(()=>{
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  if(remainSec<=0){clearInterval(timerInterval);timerFinished();return}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      remainSec--;updateTimerDisp();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          document.getElementById('progressFill').style.width=(totalSec>0?(remainSec/totalSec)*100:0)+'%';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            },1000);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            }
 
-  // Format time
-  function fmt(s) {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-  }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            function startElapsed(){
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              clearInterval(elapsedInterval);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                elapsedInterval=setInterval(()=>{
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    elapsedSec++;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        document.getElementById('elapsedVal').textContent=fmt(elapsedSec);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            updateStats();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              },1000);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              }
 
-  // Update ring
-  function updateRing(remaining, total) {
-    const pct = total > 0 ? remaining / total : 1;
-    const offset = circumference * (1 - pct);
-    const ring = document.getElementById('ringFill');
-    ring.style.strokeDashoffset = offset;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              function updateTimerDisp(){
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                const el=document.getElementById('timerDisp');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  el.textContent=fmt(remainSec);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    const pct=totalSec>0?remainSec/totalSec:1;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      el.className='timer-big'+(remainSec===0?' done':pct<=0.25?' warning':'');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      }
 
-    // Color change
-    if (pct <= 0.2) ring.style.stroke = '#ff4444';
-    else if (pct <= 0.4) ring.style.stroke = '#ff6b35';
-    else ring.style.stroke = '#00ff87';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      function updateStats(){
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        const distKm=totalDistM/1000;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          if(elapsedSec>0&&distKm>0.01){
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              document.getElementById('paceVal').textContent=fmt(Math.round(elapsedSec/distKm));
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  document.getElementById('calVal').textContent=Math.round(distKm*65);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  }
 
-    document.getElementById('ringPct').textContent = Math.round(pct * 100) + '%';
-  }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  function pauseRun(){
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    clearInterval(timerInterval);clearInterval(elapsedInterval);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      isRunning=false;isPaused=true;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        setStatus('paused');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          document.getElementById('startBtn').disabled=false;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            document.getElementById('pauseBtn').disabled=true;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            }
 
-  // Start timer
-  function startTimer() {
-    if (isPaused && remainingSeconds > 0) {
-      // Resume
-      isRunning = true;
-      isPaused = false;
-      runTimer();
-      startElapsed();
-      setStatus('running');
-      document.getElementById('startBtn').textContent = '▶ RUNNING';
-      document.getElementById('startBtn').disabled = true;
-      document.getElementById('pauseBtn').disabled = false;
-      document.getElementById('timeSetter').style.opacity = '0.4';
-      return;
-    }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            function timerFinished(){
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              clearInterval(elapsedInterval);stopGPS();isRunning=false;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                setStatus('done');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  document.getElementById('startBtn').disabled=false;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    document.getElementById('pauseBtn').disabled=true;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      document.getElementById('setMin').disabled=false;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        document.getElementById('setSec').disabled=false;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          const dk=totalDistM/1000;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            document.getElementById('fDist').textContent=dk.toFixed(2)+' km ('+Math.round(totalDistM)+' m)';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              document.getElementById('fTime').textContent=fmt(elapsedSec);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                document.getElementById('fPace').textContent=(elapsedSec>0&&dk>0.01)?fmt(Math.round(elapsedSec/dk))+'/km':'--:--';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  document.getElementById('fCal').textContent=Math.round(dk*65)+' kcal';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    if(navigator.vibrate)navigator.vibrate([300,100,300]);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      setTimeout(()=>document.getElementById('finishOverlay').classList.add('show'),600);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      }
 
-    const mins = parseInt(document.getElementById('setMin').value) || 0;
-    const secs = parseInt(document.getElementById('setSec').value) || 0;
-    totalSeconds = mins * 60 + secs;
-    remainingSeconds = totalSeconds;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      function closeFinish(){document.getElementById('finishOverlay').classList.remove('show')}
 
-    if (totalSeconds <= 0) {
-      alert('Please set a time greater than 0!');
-      return;
-    }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      function resetAll(){
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        clearInterval(timerInterval);clearInterval(elapsedInterval);stopGPS();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          isRunning=false;isPaused=false;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            remainSec=0;elapsedSec=0;totalDistM=0;lastPos=null;currentSpeed=0;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              const m=parseInt(document.getElementById('setMin').value)||7;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                const s=parseInt(document.getElementById('setSec').value)||0;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  document.getElementById('timerDisp').textContent=fmt(m*60+s);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    document.getElementById('timerDisp').className='timer-big';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      document.getElementById('progressFill').style.width='100%';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        document.getElementById('elapsedVal').textContent='00:00';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          document.getElementById('speedVal').textContent='0.0';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            document.getElementById('paceVal').textContent='--:--';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              document.getElementById('calVal').textContent='0';
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                document.getElementById('startBtn').disabled=false;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  document.getElementById('pauseBtn').disabled=true;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    document.getElementById('setMin').disabled=false;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      document.getElementById('setSec').disabled=false;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        updateDistDisplay();
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          setStatus('idle');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            setGPS('idle','GPS بند ہے — Start دبائیں');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            }
 
-    isRunning = true;
-    isPaused = false;
-    elapsedSeconds = 0;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            function setStatus(s){
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              const bar=document.getElementById('statusBar');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                const dots=document.getElementById('runDots');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  const map={running:['s-running','● RUNNING'],paused:['s-paused','⏸ PAUSED'],done:['s-done','🏁 FINISHED!'],idle:['s-idle','● READY']};
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    bar.className='status-bar '+map[s][0];bar.textContent=map[s][1];
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      dots.className='run-dots'+(s==='running'?' show':'');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      }
 
-    updateDisplay();
-    updateRing(remainingSeconds, totalSeconds);
-    runTimer();
-    startElapsed();
-    setStatus('running');
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      document.getElementById('setMin').addEventListener('input',()=>{if(!isRunning&&!isPaused){const m=parseInt(document.getElementById('setMin').value)||0,s=parseInt(document.getElementById('setSec').value)||0;document.getElementById('timerDisp').textContent=fmt(m*60+s)}});
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      document.getElementById('setSec').addEventListener('input',()=>{if(!isRunning&&!isPaused){const m=parseInt(document.getElementById('setMin').value)||0,s=parseInt(document.getElementById('setSec').value)||0;document.getElementById('timerDisp').textContent=fmt(m*60+s)}});
 
-    document.getElementById('startBtn').textContent = '▶ RUNNING';
-    document.getElementById('startBtn').disabled = true;
-    document.getElementById('pauseBtn').disabled = false;
-    document.getElementById('timeSetter').style.opacity = '0.4';
-    document.getElementById('timeSetter').style.pointerEvents = 'none';
-  }
-
-  function runTimer() {
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-      if (remainingSeconds <= 0) {
-        clearInterval(timerInterval);
-        timerFinished();
-        return;
-      }
-      remainingSeconds--;
-      updateDisplay();
-      updateRing(remainingSeconds, totalSeconds);
-    }, 1000);
-  }
-
-  function startElapsed() {
-    clearInterval(elapsedInterval);
-    elapsedInterval = setInterval(() => {
-      elapsedSeconds++;
-      document.getElementById('totalTimeVal').textContent = fmt(elapsedSeconds);
-      updateStats();
-    }, 1000);
-  }
-
-  function updateDisplay() {
-    const el = document.getElementById('timerDisplay');
-    el.textContent = fmt(remainingSeconds);
-
-    const pct = totalSeconds > 0 ? remainingSeconds / totalSeconds : 1;
-    if (remainingSeconds === 0) {
-      el.className = 'timer-digits finished';
-    } else if (pct <= 0.25) {
-      el.className = 'timer-digits warning';
-      document.getElementById('timerSubLabel').textContent = '⚠️ وقت ختم ہونے والا ہے!';
-    } else {
-      el.className = 'timer-digits';
-      document.getElementById('timerSubLabel').textContent = 'باقی وقت';
-    }
-  }
-
-  function pauseTimer() {
-    if (isRunning) {
-      clearInterval(timerInterval);
-      clearInterval(elapsedInterval);
-      isRunning = false;
-      isPaused = true;
-      setStatus('paused');
-      document.getElementById('startBtn').textContent = '▶ RESUME';
-      document.getElementById('startBtn').disabled = false;
-      document.getElementById('pauseBtn').disabled = true;
-    }
-  }
-
-  function resetTimer() {
-    clearInterval(timerInterval);
-    clearInterval(elapsedInterval);
-    isRunning = false;
-    isPaused = false;
-    remainingSeconds = 0;
-    elapsedSeconds = 0;
-    totalSeconds = 0;
-
-    document.getElementById('timerDisplay').textContent = '00:00';
-    document.getElementById('timerDisplay').className = 'timer-digits';
-    document.getElementById('timerSubLabel').textContent = 'مقررہ وقت سیٹ کریں';
-    document.getElementById('ringPct').textContent = '100%';
-    document.getElementById('ringFill').style.strokeDashoffset = 0;
-    document.getElementById('ringFill').style.stroke = '#00ff87';
-    document.getElementById('startBtn').textContent = '▶ START';
-    document.getElementById('startBtn').disabled = false;
-    document.getElementById('pauseBtn').disabled = true;
-    document.getElementById('timeSetter').style.opacity = '1';
-    document.getElementById('timeSetter').style.pointerEvents = 'auto';
-    document.getElementById('totalTimeVal').textContent = '00:00';
-    setStatus('idle');
-    updateStats();
-  }
-
-  function timerFinished() {
-    clearInterval(elapsedInterval);
-    isRunning = false;
-    setStatus('done');
-
-    document.getElementById('startBtn').textContent = '▶ START';
-    document.getElementById('startBtn').disabled = false;
-    document.getElementById('pauseBtn').disabled = true;
-    document.getElementById('timeSetter').style.opacity = '1';
-    document.getElementById('timeSetter').style.pointerEvents = 'auto';
-
-    // Show finish overlay
-    document.getElementById('fTotalDist').textContent = totalDistance.toFixed(2) + ' km';
-    document.getElementById('fTotalTime').textContent = fmt(elapsedSeconds);
-    document.getElementById('fPace').textContent = calcPaceStr();
-    document.getElementById('fCalories').textContent = Math.round(totalDistance * 65) + ' kcal';
-
-    setTimeout(() => {
-      document.getElementById('finishOverlay').classList.add('show');
-    }, 500);
-
-    // Vibrate if supported
-    if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
-  }
-
-  function closeFinish() {
-    document.getElementById('finishOverlay').classList.remove('show');
-  }
-
-  function setStatus(state) {
-    const bar = document.getElementById('statusBar');
-    const dots = document.getElementById('runDots');
-    if (state === 'running') {
-      bar.className = 'status-bar status-running';
-      bar.textContent = '● RUNNING';
-      dots.classList.add('show');
-    } else if (state === 'paused') {
-      bar.className = 'status-bar status-paused';
-      bar.textContent = '⏸ PAUSED';
-      dots.classList.remove('show');
-    } else if (state === 'done') {
-      bar.className = 'status-bar status-done';
-      bar.textContent = '🏁 FINISHED!';
-      dots.classList.remove('show');
-    } else {
-      bar.className = 'status-bar status-idle';
-      bar.textContent = '● READY';
-      dots.classList.remove('show');
-    }
-  }
-
-  // Distance
-  function addDistance() {
-    const val = parseFloat(document.getElementById('distInput').value);
-    if (isNaN(val) || val <= 0) return;
-    totalDistance += val;
-    document.getElementById('distInput').value = '';
-    document.getElementById('distDisplay').textContent = totalDistance.toFixed(2);
-    document.getElementById('totalDistVal').textContent = totalDistance.toFixed(2) + ' km';
-    updateStats();
-
-    // Flash animation
-    const el = document.getElementById('distDisplay');
-    el.style.transform = 'scale(1.15)';
-    setTimeout(() => { el.style.transform = 'scale(1)'; }, 200);
-  }
-
-  function calcPaceStr() {
-    if (totalDistance <= 0 || elapsedSeconds <= 0) return '--:--';
-    const secPerKm = elapsedSeconds / totalDistance;
-    const m = Math.floor(secPerKm / 60);
-    const s = Math.round(secPerKm % 60);
-    return `${m}:${String(s).padStart(2,'0')}`;
-  }
-
-  function updateStats() {
-    // Pace
-    document.getElementById('paceVal').textContent = calcPaceStr();
-
-    // Speed km/h
-    const speed = elapsedSeconds > 0 ? (totalDistance / elapsedSeconds * 3600) : 0;
-    document.getElementById('speedVal').textContent = speed.toFixed(1);
-
-    // Calories (approx 65 kcal per km for avg person)
-    const cal = Math.round(totalDistance * 65);
-    document.getElementById('calorieVal').textContent = cal;
-
-    // Steps (approx 1312 steps per km)
-    const steps = Math.round(totalDistance * 1312);
-    document.getElementById('stepsVal').textContent = steps.toLocaleString();
-  }
-
-  function clearAll() {
-    resetTimer();
-    totalDistance = 0;
-    elapsedSeconds = 0;
-    document.getElementById('distDisplay').textContent = '0.00';
-    document.getElementById('totalDistVal').textContent = '0.00 km';
-    document.getElementById('calorieVal').textContent = '0';
-    document.getElementById('stepsVal').textContent = '0';
-    document.getElementById('paceVal').textContent = '--:--';
-    document.getElementById('speedVal').textContent = '0.0';
-    document.getElementById('totalTimeVal').textContent = '00:00';
-  }
-
-  // Live timer display update from setter
-  document.getElementById('setMin').addEventListener('input', previewTime);
-  document.getElementById('setSec').addEventListener('input', previewTime);
-
-  function previewTime() {
-    if (!isRunning && !isPaused) {
-      const m = parseInt(document.getElementById('setMin').value) || 0;
-      const s = parseInt(document.getElementById('setSec').value) || 0;
-      document.getElementById('timerDisplay').textContent = fmt(m * 60 + s);
-      document.getElementById('ringFill').style.strokeDashoffset = 0;
-      document.getElementById('ringPct').textContent = '100%';
-    }
-  }
-
-  // Enter key adds distance
-  document.getElementById('distInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') addDistance();
-  });
-
-  // Init
-  previewTime();
-
-  // PWA Service Worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js')
-      .then(() => console.log('RunTrack PWA ready ✓'))
-      .catch(e => console.log('SW error:', e));
-  }
-</script>
-</body>
-</html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(e=>console.log('SW:',e))}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      </script>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      </body>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      </html>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
